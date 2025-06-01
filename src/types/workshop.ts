@@ -106,19 +106,19 @@ export interface Tecnico {
   activo: boolean;
 }
 
-export interface Factura {
+// Interfaz para orden de entrega (reemplaza Factura)
+export interface OrdenEntregaDocument {
   id: string;
   numero: string;
   ordenTrabajoId: string;
   cliente: Cliente;
-  fecha: Date;
-  items: {
-    descripcion: string;
-    cantidad: number;
-    precioUnitario: number;
-    total: number;
-  }[];
-  subtotal: number;
-  iva: number;
-  total: number;
+  fechaEntrega: Date;
+  tecnicoEntrega: string;
+  trabajosRealizados: string[];
+  repuestosUtilizados: RepuestoOrden[];
+  observacionesEntrega: string;
+  garantiaDias: number;
+  proximoMantenimiento?: Date;
+  firmaCliente?: string;
+  firmaTecnico?: string;
 }

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,32 +12,38 @@ import {
   TrendingUp,
   Users,
   AlertCircle,
-  Kanban
+  Kanban,
+  Bell,
+  Settings
 } from 'lucide-react';
 import NuevaOrden from '@/components/NuevaOrden';
 import ListaOrdenes from '@/components/ListaOrdenes';
 import DetalleOrden from '@/components/DetalleOrden';
-import GenerarFactura from '@/components/GenerarFactura';
+import OrdenEntrega from '@/components/OrdenEntrega';
 import KanbanTaller from '@/components/KanbanTaller';
+import GestionTecnicos from '@/components/GestionTecnicos';
+import NotificacionesAutomaticas from '@/components/NotificacionesAutomaticas';
 import { formatearPrecio } from '@/utils/workshop';
 import { OrdenTrabajo } from '@/types/workshop';
 
-type VistaActual = 'dashboard' | 'kanban' | 'nueva-orden' | 'lista-ordenes' | 'detalle-orden' | 'factura';
+type VistaActual = 'dashboard' | 'kanban' | 'nueva-orden' | 'lista-ordenes' | 'detalle-orden' | 'orden-entrega' | 'tecnicos' | 'notificaciones';
 
 const Index = () => {
   const [vistaActual, setVistaActual] = useState<VistaActual>('dashboard');
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenTrabajo | null>(null);
 
-  // Datos de ejemplo mejorados
+  // Estadísticas del taller (sin ventas)
   const estadisticas = {
     ordenesHoy: 3,
     enReparacion: 8,
     paraEntrega: 5,
-    ventasHoy: 250000,
-    ventasSemana: 1850000,
+    completadasHoy: 2,
+    completadasSemana: 24,
     clientesAtendidos: 42,
     urgentes: 2,
-    atrasadas: 1
+    atrasadas: 1,
+    tiempoPromedioReparacion: 2.5,
+    satisfaccionClientes: 4.7
   };
 
   // Órdenes de ejemplo para el Kanban
@@ -130,21 +135,21 @@ const Index = () => {
       cliente: 'Juan Carlos Pérez',
       estado: 'en_reparacion',
       diasRestantes: 2,
-      valor: 85000
+      tecnico: 'Carlos García'
     },
     {
       numero: 'OT241201-002',
       cliente: 'María García',
       estado: 'finalizada',
       diasRestantes: 0,
-      valor: 25000
+      tecnico: 'Ana Rodríguez'
     },
     {
       numero: 'OT241130-045',
       cliente: 'Carlos Rodríguez',
       estado: 'esperando_repuestos',
       diasRestantes: -1,
-      valor: 150000
+      tecnico: 'Luis Martínez'
     }
   ];
 
@@ -155,7 +160,6 @@ const Index = () => {
 
   const handleCambiarEstado = (ordenId: string, nuevoEstado: OrdenTrabajo['estado']) => {
     console.log(`Cambiando estado de orden ${ordenId} a ${nuevoEstado}`);
-    // Aquí se implementaría la lógica para actualizar el estado
   };
 
   const renderVista = () => {
@@ -174,8 +178,12 @@ const Index = () => {
         return <ListaOrdenes />;
       case 'detalle-orden':
         return <DetalleOrden orden={ordenSeleccionada} />;
-      case 'factura':
-        return <GenerarFactura />;
+      case 'orden-entrega':
+        return <OrdenEntrega />;
+      case 'tecnicos':
+        return <GestionTecnicos />;
+      case 'notificaciones':
+        return <NotificacionesAutomaticas />;
       default:
         return renderDashboard();
     }
@@ -193,7 +201,7 @@ const Index = () => {
             <div>
               <h1 className="text-3xl font-bold">Sistema de Taller Automatizado</h1>
               <p className="text-blue-100 mt-2">
-                Gestión completa, moderna y eficiente de reparaciones
+                Gestión completa y automatizada de reparaciones
               </p>
             </div>
           </div>
@@ -219,7 +227,7 @@ const Index = () => {
       </div>
 
       {/* Menú de Navegación Rápida */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Button
           variant="outline"
           className="h-20 flex flex-col gap-2 hover:bg-blue-50"
@@ -247,22 +255,30 @@ const Index = () => {
         <Button
           variant="outline"
           className="h-20 flex flex-col gap-2 hover:bg-orange-50"
-          onClick={() => setVistaActual('detalle-orden')}
+          onClick={() => setVistaActual('tecnicos')}
         >
-          <Wrench className="h-6 w-6 text-orange-600" />
-          <span>Seguimiento</span>
+          <Users className="h-6 w-6 text-orange-600" />
+          <span>Técnicos</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="h-20 flex flex-col gap-2 hover:bg-yellow-50"
+          onClick={() => setVistaActual('notificaciones')}
+        >
+          <Bell className="h-6 w-6 text-yellow-600" />
+          <span>Notificaciones</span>
         </Button>
         <Button
           variant="outline"
           className="h-20 flex flex-col gap-2 hover:bg-green-50"
-          onClick={() => setVistaActual('factura')}
+          onClick={() => setVistaActual('orden-entrega')}
         >
-          <DollarSign className="h-6 w-6 text-green-600" />
-          <span>Facturación</span>
+          <FileText className="h-6 w-6 text-green-600" />
+          <span>Orden Entrega</span>
         </Button>
       </div>
 
-      {/* Estadísticas del Día */}
+      {/* Estadísticas del Taller */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-l-4 border-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -272,14 +288,14 @@ const Index = () => {
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{estadisticas.ordenesHoy}</div>
             <p className="text-xs text-muted-foreground">
-              +2 desde ayer
+              {estadisticas.completadasHoy} completadas
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Reparación</CardTitle>
+            <CardTitle className="text-sm font-medium">En Proceso</CardTitle>
             <Wrench className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -292,13 +308,13 @@ const Index = () => {
 
         <Card className="border-l-4 border-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ventas Hoy</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Tiempo Promedio</CardTitle>
+            <Clock className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatearPrecio(estadisticas.ventasHoy)}</div>
+            <div className="text-2xl font-bold text-green-600">{estadisticas.tiempoPromedioReparacion}h</div>
             <p className="text-xs text-muted-foreground">
-              +15% vs ayer
+              Por reparación
             </p>
           </CardContent>
         </Card>
@@ -317,14 +333,14 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Órdenes Pendientes y Alertas */}
+      {/* Órdenes Pendientes y Métricas del Taller */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Órdenes Recientes */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Órdenes Recientes
+              Órdenes en Proceso
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -341,9 +357,7 @@ const Index = () => {
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">{orden.cliente}</p>
-                  <p className="text-sm font-medium text-green-600">
-                    {formatearPrecio(orden.valor)}
-                  </p>
+                  <p className="text-xs text-gray-500">Técnico: {orden.tecnico}</p>
                 </div>
                 <div className="text-right">
                   {orden.diasRestantes > 0 ? (
@@ -372,50 +386,50 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Alertas y Resumen */}
+        {/* Métricas del Taller */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Alertas y Resumen
+              <TrendingUp className="h-5 w-5" />
+              Rendimiento del Taller
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <span className="font-medium text-red-800">1 Orden Atrasada</span>
+                <Clock className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-green-800">Productividad</span>
               </div>
-              <p className="text-sm text-red-700">
-                OT241130-045 - Carlos Rodríguez (1 día de retraso)
+              <p className="text-sm text-green-700">
+                {estadisticas.completadasSemana} trabajos completados esta semana
+              </p>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-800">Satisfacción</span>
+              </div>
+              <p className="text-sm text-blue-700">
+                {estadisticas.satisfaccionClientes}/5.0 - {estadisticas.clientesAtendidos} clientes atendidos
               </p>
             </div>
 
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-yellow-600" />
-                <span className="font-medium text-yellow-800">5 Para Entrega Hoy</span>
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <span className="font-medium text-yellow-800">Recordatorio</span>
               </div>
               <p className="text-sm text-yellow-700">
-                Revisa las órdenes finalizadas pendientes de entrega
-              </p>
-            </div>
-
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-green-800">Ventas de la Semana</span>
-              </div>
-              <p className="text-sm text-green-700">
-                {formatearPrecio(estadisticas.ventasSemana)} - Meta alcanzada al 92%
+                {estadisticas.paraEntrega} bicicletas listas para entrega
               </p>
             </div>
 
             <Button 
               className="w-full"
-              onClick={() => setVistaActual('lista-ordenes')}
+              onClick={() => setVistaActual('tecnicos')}
             >
-              Gestionar Órdenes
+              Gestionar Técnicos
             </Button>
           </CardContent>
         </Card>
