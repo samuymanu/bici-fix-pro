@@ -12,28 +12,117 @@ import {
   FileText,
   TrendingUp,
   Users,
-  AlertCircle
+  AlertCircle,
+  Kanban
 } from 'lucide-react';
 import NuevaOrden from '@/components/NuevaOrden';
 import ListaOrdenes from '@/components/ListaOrdenes';
 import DetalleOrden from '@/components/DetalleOrden';
 import GenerarFactura from '@/components/GenerarFactura';
+import KanbanTaller from '@/components/KanbanTaller';
 import { formatearPrecio } from '@/utils/workshop';
+import { OrdenTrabajo } from '@/types/workshop';
 
-type VistaActual = 'dashboard' | 'nueva-orden' | 'lista-ordenes' | 'detalle-orden' | 'factura';
+type VistaActual = 'dashboard' | 'kanban' | 'nueva-orden' | 'lista-ordenes' | 'detalle-orden' | 'factura';
 
 const Index = () => {
   const [vistaActual, setVistaActual] = useState<VistaActual>('dashboard');
+  const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenTrabajo | null>(null);
 
-  // Datos de ejemplo para el dashboard
+  // Datos de ejemplo mejorados
   const estadisticas = {
     ordenesHoy: 3,
     enReparacion: 8,
     paraEntrega: 5,
     ventasHoy: 250000,
     ventasSemana: 1850000,
-    clientesAtendidos: 42
+    clientesAtendidos: 42,
+    urgentes: 2,
+    atrasadas: 1
   };
+
+  // Órdenes de ejemplo para el Kanban
+  const ordenesEjemplo: OrdenTrabajo[] = [
+    {
+      id: 'orden_1',
+      numero: 'OT241201-001',
+      cliente: {
+        id: 'cliente_1',
+        nombre: 'Juan Carlos Pérez',
+        telefono: '3001234567',
+        email: 'juan.perez@email.com',
+        direccion: 'Calle 123 #45-67',
+        fechaRegistro: new Date('2024-01-15')
+      },
+      bicicleta: {
+        id: 'bici_1',
+        clienteId: 'cliente_1',
+        marca: 'Trek',
+        modelo: 'X-Caliber 8',
+        serial: 'TR2024001',
+        color: 'Azul',
+        tipo: 'montaña',
+        año: 2023
+      },
+      fechaIngreso: new Date('2024-12-01'),
+      fechaEstimadaEntrega: new Date('2024-12-05'),
+      problemas: ['Cadena se sale', 'Frenos traseros no funcionan'],
+      diagnostico: 'La cadena necesita tensión y el cassette está desgastado.',
+      observacionesIniciales: 'Bicicleta en buen estado general, solo problemas mecánicos',
+      observacionesTecnico: 'Se requiere ajuste completo de transmisión',
+      repuestos: [],
+      servicios: [],
+      tareas: [],
+      fotos: [],
+      observaciones: ['Bicicleta recibida en buen estado general'],
+      notificaciones: [],
+      estado: 'en_reparacion',
+      prioridad: 'media',
+      tecnicoAsignado: 'Carlos García',
+      costoTotal: 85000,
+      adelanto: 40000,
+      saldo: 45000
+    },
+    {
+      id: 'orden_2',
+      numero: 'OT241201-002',
+      cliente: {
+        id: 'cliente_2',
+        nombre: 'María García',
+        telefono: '3009876543',
+        email: 'maria.garcia@email.com',
+        direccion: 'Carrera 45 #12-34',
+        fechaRegistro: new Date('2024-02-20')
+      },
+      bicicleta: {
+        id: 'bici_2',
+        clienteId: 'cliente_2',
+        marca: 'Giant',
+        modelo: 'Escape 3',
+        serial: 'GI2024002',
+        color: 'Blanco',
+        tipo: 'urbana',
+        año: 2024
+      },
+      fechaIngreso: new Date('2024-12-02'),
+      fechaEstimadaEntrega: new Date('2024-12-03'),
+      problemas: ['Rueda pinchada'],
+      diagnostico: 'Cambio de cámara y revisión general',
+      observacionesIniciales: 'Bicicleta nueva, solo pinchazo',
+      observacionesTecnico: '',
+      repuestos: [],
+      servicios: [],
+      tareas: [],
+      fotos: [],
+      observaciones: [],
+      notificaciones: [],
+      estado: 'finalizada',
+      prioridad: 'baja',
+      costoTotal: 25000,
+      adelanto: 25000,
+      saldo: 0
+    }
+  ];
 
   const ordenesPendientes = [
     {
@@ -59,14 +148,32 @@ const Index = () => {
     }
   ];
 
+  const handleOrdenClick = (orden: OrdenTrabajo) => {
+    setOrdenSeleccionada(orden);
+    setVistaActual('detalle-orden');
+  };
+
+  const handleCambiarEstado = (ordenId: string, nuevoEstado: OrdenTrabajo['estado']) => {
+    console.log(`Cambiando estado de orden ${ordenId} a ${nuevoEstado}`);
+    // Aquí se implementaría la lógica para actualizar el estado
+  };
+
   const renderVista = () => {
     switch (vistaActual) {
+      case 'kanban':
+        return (
+          <KanbanTaller 
+            ordenes={ordenesEjemplo}
+            onOrdenClick={handleOrdenClick}
+            onCambiarEstado={handleCambiarEstado}
+          />
+        );
       case 'nueva-orden':
         return <NuevaOrden />;
       case 'lista-ordenes':
         return <ListaOrdenes />;
       case 'detalle-orden':
-        return <DetalleOrden />;
+        return <DetalleOrden orden={ordenSeleccionada} />;
       case 'factura':
         return <GenerarFactura />;
       default:
@@ -84,13 +191,21 @@ const Index = () => {
               <Wrench className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Sistema de Taller</h1>
+              <h1 className="text-3xl font-bold">Sistema de Taller Automatizado</h1>
               <p className="text-blue-100 mt-2">
-                Gestión completa de reparaciones y mantenimiento
+                Gestión completa, moderna y eficiente de reparaciones
               </p>
             </div>
           </div>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex gap-2">
+            <Button 
+              onClick={() => setVistaActual('kanban')}
+              className="bg-white text-blue-600 hover:bg-blue-50"
+              size="lg"
+            >
+              <Kanban className="h-5 w-5 mr-2" />
+              Panel Taller
+            </Button>
             <Button 
               onClick={() => setVistaActual('nueva-orden')}
               className="bg-white text-blue-600 hover:bg-blue-50"
@@ -104,91 +219,99 @@ const Index = () => {
       </div>
 
       {/* Menú de Navegación Rápida */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Button
           variant="outline"
-          className="h-20 flex flex-col gap-2"
+          className="h-20 flex flex-col gap-2 hover:bg-blue-50"
+          onClick={() => setVistaActual('kanban')}
+        >
+          <Kanban className="h-6 w-6 text-blue-600" />
+          <span>Panel Taller</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="h-20 flex flex-col gap-2 hover:bg-green-50"
           onClick={() => setVistaActual('nueva-orden')}
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-6 w-6 text-green-600" />
           <span>Nueva Orden</span>
         </Button>
         <Button
           variant="outline"
-          className="h-20 flex flex-col gap-2"
+          className="h-20 flex flex-col gap-2 hover:bg-purple-50"
           onClick={() => setVistaActual('lista-ordenes')}
         >
-          <FileText className="h-6 w-6" />
+          <FileText className="h-6 w-6 text-purple-600" />
           <span>Ver Órdenes</span>
         </Button>
         <Button
           variant="outline"
-          className="h-20 flex flex-col gap-2"
+          className="h-20 flex flex-col gap-2 hover:bg-orange-50"
           onClick={() => setVistaActual('detalle-orden')}
         >
-          <Wrench className="h-6 w-6" />
+          <Wrench className="h-6 w-6 text-orange-600" />
           <span>Seguimiento</span>
         </Button>
         <Button
           variant="outline"
-          className="h-20 flex flex-col gap-2"
+          className="h-20 flex flex-col gap-2 hover:bg-green-50"
           onClick={() => setVistaActual('factura')}
         >
-          <DollarSign className="h-6 w-6" />
+          <DollarSign className="h-6 w-6 text-green-600" />
           <span>Facturación</span>
         </Button>
       </div>
 
       {/* Estadísticas del Día */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-l-4 border-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Órdenes Hoy</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{estadisticas.ordenesHoy}</div>
+            <div className="text-2xl font-bold text-blue-600">{estadisticas.ordenesHoy}</div>
             <p className="text-xs text-muted-foreground">
               +2 desde ayer
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">En Reparación</CardTitle>
-            <Wrench className="h-4 w-4 text-muted-foreground" />
+            <Wrench className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{estadisticas.enReparacion}</div>
+            <div className="text-2xl font-bold text-purple-600">{estadisticas.enReparacion}</div>
             <p className="text-xs text-muted-foreground">
               {estadisticas.paraEntrega} listas para entrega
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ventas Hoy</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatearPrecio(estadisticas.ventasHoy)}</div>
+            <div className="text-2xl font-bold text-green-600">{formatearPrecio(estadisticas.ventasHoy)}</div>
             <p className="text-xs text-muted-foreground">
               +15% vs ayer
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Alertas</CardTitle>
+            <AlertCircle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{estadisticas.clientesAtendidos}</div>
+            <div className="text-2xl font-bold text-orange-600">{estadisticas.urgentes + estadisticas.atrasadas}</div>
             <p className="text-xs text-muted-foreground">
-              Esta semana
+              {estadisticas.urgentes} urgentes, {estadisticas.atrasadas} atrasada
             </p>
           </CardContent>
         </Card>

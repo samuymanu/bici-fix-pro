@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,14 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Wrench, Package, DollarSign, FileText } from 'lucide-react';
+import { Calendar, Clock, User, Wrench, Package, DollarSign, FileText, Camera, CheckSquare } from 'lucide-react';
 import { OrdenTrabajo } from '@/types/workshop';
 import { obtenerColorEstado, obtenerTextoEstado, formatearPrecio } from '@/utils/workshop';
 import TallerHeader from './TallerHeader';
 
-const DetalleOrden = () => {
-  // Datos de ejemplo - en una aplicación real vendría de una base de datos
-  const [orden, setOrden] = useState<OrdenTrabajo>({
+interface DetalleOrdenProps {
+  orden?: OrdenTrabajo | null;
+}
+
+const DetalleOrden = ({ orden: ordenProp }: DetalleOrdenProps) => {
+  // Datos de ejemplo si no se proporciona una orden
+  const [orden, setOrden] = useState<OrdenTrabajo>(ordenProp || {
     id: 'orden_1',
     numero: 'OT241201-001',
     cliente: {
@@ -22,7 +25,8 @@ const DetalleOrden = () => {
       nombre: 'Juan Carlos Pérez',
       telefono: '3001234567',
       email: 'juan.perez@email.com',
-      direccion: 'Calle 123 #45-67'
+      direccion: 'Calle 123 #45-67',
+      fechaRegistro: new Date('2024-01-15')
     },
     bicicleta: {
       id: 'bici_1',
@@ -38,6 +42,8 @@ const DetalleOrden = () => {
     fechaEstimadaEntrega: new Date('2024-12-05'),
     problemas: ['Cadena se sale', 'Frenos traseros no funcionan', 'Rueda delantera desalineada'],
     diagnostico: 'La cadena necesita tensión y el cassette está desgastado. Los frenos requieren cambio de pastillas. La rueda necesita centrado.',
+    observacionesIniciales: 'Bicicleta recibida en buen estado general, sin rayones visibles.',
+    observacionesTecnico: 'Se requiere ajuste completo de transmisión y frenos.',
     repuestos: [
       {
         repuestoId: 'rep_1',
@@ -45,35 +51,48 @@ const DetalleOrden = () => {
           id: 'rep_1',
           nombre: 'Pastillas de freno Shimano',
           precio: 25000,
-          categoria: 'frenos',
-          stock: 10
+          categoria: 'frenos'
         },
         cantidad: 1,
         precioUnitario: 25000
-      },
-      {
-        repuestoId: 'rep_2',
-        repuesto: {
-          id: 'rep_2',
-          nombre: 'Cassette 11-32T',
-          precio: 45000,
-          categoria: 'transmision',
-          stock: 5
-        },
-        cantidad: 1,
-        precioUnitario: 45000
       }
     ],
     servicios: [
       {
         id: 'serv_1',
         descripcion: 'Centrado de rueda',
-        precio: 15000
+        precio: 15000,
+        tiempoEstimado: 30
       },
       {
         id: 'serv_2',
         descripcion: 'Ajuste de frenos',
-        precio: 20000
+        precio: 20000,
+        tiempoEstimado: 45
+      }
+    ],
+    tareas: [
+      {
+        id: 'tarea_1',
+        descripcion: 'Revisar tensión de cadena',
+        completada: true,
+        tecnicoAsignado: 'Carlos García',
+        fechaCompletada: new Date()
+      },
+      {
+        id: 'tarea_2',
+        descripcion: 'Cambiar pastillas de freno',
+        completada: false,
+        tecnicoAsignado: 'Carlos García'
+      }
+    ],
+    fotos: [
+      {
+        id: 'foto_1',
+        url: '/placeholder-bike-before.jpg',
+        tipo: 'antes',
+        descripcion: 'Estado inicial de la bicicleta',
+        fecha: new Date()
       }
     ],
     observaciones: [
@@ -81,10 +100,13 @@ const DetalleOrden = () => {
       'Cliente reporta problemas desde hace 2 semanas',
       'Se inició reparación de frenos'
     ],
+    notificaciones: [],
     estado: 'en_reparacion',
-    costoTotal: 105000,
-    adelanto: 50000,
-    saldo: 55000
+    prioridad: 'media',
+    tecnicoAsignado: 'Carlos García',
+    costoTotal: 60000,
+    adelanto: 30000,
+    saldo: 30000
   });
 
   const [nuevaObservacion, setNuevaObservacion] = useState('');
@@ -103,6 +125,17 @@ const DetalleOrden = () => {
     setOrden({
       ...orden,
       estado: nuevoEstado
+    });
+  };
+
+  const toggleTarea = (tareaId: string) => {
+    setOrden({
+      ...orden,
+      tareas: orden.tareas.map(tarea =>
+        tarea.id === tareaId
+          ? { ...tarea, completada: !tarea.completada, fechaCompletada: !tarea.completada ? new Date() : undefined }
+          : tarea
+      )
     });
   };
 
@@ -248,6 +281,76 @@ const DetalleOrden = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Tareas de Reparación */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckSquare className="h-5 w-5" />
+                Lista de Tareas ({orden.tareas.filter(t => t.completada).length}/{orden.tareas.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {orden.tareas.map((tarea) => (
+                <div key={tarea.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <input
+                    type="checkbox"
+                    checked={tarea.completada}
+                    onChange={() => toggleTarea(tarea.id)}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex-1">
+                    <p className={`font-medium ${tarea.completada ? 'line-through text-gray-500' : ''}`}>
+                      {tarea.descripcion}
+                    </p>
+                    {tarea.tecnicoAsignado && (
+                      <p className="text-sm text-gray-600">Asignado: {tarea.tecnicoAsignado}</p>
+                    )}
+                  </div>
+                  {tarea.completada && tarea.fechaCompletada && (
+                    <Badge variant="outline" className="text-green-600">
+                      Completada
+                    </Badge>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Fotos de la Reparación */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Fotos de la Reparación ({orden.fotos.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {orden.fotos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {orden.fotos.map((foto) => (
+                    <div key={foto.id} className="space-y-2">
+                      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                        <Camera className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <div>
+                        <Badge variant="outline">{foto.tipo}</Badge>
+                        <p className="text-xs text-gray-600 mt-1">{foto.descripcion}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Camera className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                  <p>No hay fotos agregadas</p>
+                  <Button variant="outline" className="mt-2">
+                    Agregar Foto
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Panel lateral - Estado y Observaciones */}
@@ -272,10 +375,33 @@ const DetalleOrden = () => {
                     <SelectItem value="diagnostico">En Diagnóstico</SelectItem>
                     <SelectItem value="esperando_repuestos">Esperando Repuestos</SelectItem>
                     <SelectItem value="en_reparacion">En Reparación</SelectItem>
+                    <SelectItem value="control_calidad">Control de Calidad</SelectItem>
                     <SelectItem value="finalizada">Finalizada</SelectItem>
                     <SelectItem value="entregada">Entregada</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="prioridad">Prioridad</Label>
+                <Select value={orden.prioridad} onValueChange={(value: OrdenTrabajo['prioridad']) => 
+                  setOrden({...orden, prioridad: value})
+                }>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="baja">Baja</SelectItem>
+                    <SelectItem value="media">Media</SelectItem>
+                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="urgente">Urgente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Técnico Asignado</Label>
+                <p className="font-medium">{orden.tecnicoAsignado || 'Sin asignar'}</p>
               </div>
 
               <div>
