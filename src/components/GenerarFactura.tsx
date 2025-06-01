@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,8 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
       nombre: 'Juan Carlos Pérez',
       telefono: '3001234567',
       email: 'juan@email.com',
-      direccion: 'Calle 123 #45-67, Bogotá'
+      direccion: 'Calle 123 #45-67, Bogotá',
+      fechaRegistro: new Date('2024-01-01')
     },
     bicicleta: {
       id: '1',
@@ -34,13 +34,16 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
       modelo: 'X-Caliber 8',
       serial: 'TK2024001',
       color: 'Azul',
-      tipo: 'montaña'
+      tipo: 'montaña',
+      año: 2023
     },
     fechaIngreso: new Date('2024-12-01'),
     fechaEstimadaEntrega: new Date('2024-12-05'),
-    fechaEntrega: new Date('2024-12-05'),
+    fechaEntregaReal: new Date('2024-12-05'),
     problemas: ['Frenos chirriantes', 'Cambios desajustados'],
     diagnostico: 'Reparación completa de sistema de frenos y transmisión',
+    observacionesIniciales: 'Bicicleta en buen estado general',
+    observacionesTecnico: 'Trabajo completado satisfactoriamente',
     repuestos: [
       {
         repuestoId: '1',
@@ -48,8 +51,7 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
           id: '1',
           nombre: 'Pastillas de freno Shimano',
           precio: 25000,
-          categoria: 'Frenos',
-          stock: 10
+          categoria: 'frenos'
         },
         cantidad: 2,
         precioUnitario: 25000
@@ -60,8 +62,7 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
           id: '2',
           nombre: 'Cable de cambios',
           precio: 8000,
-          categoria: 'Transmisión',
-          stock: 15
+          categoria: 'transmision'
         },
         cantidad: 1,
         precioUnitario: 8000
@@ -84,8 +85,12 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
         precio: 12000
       }
     ],
+    tareas: [],
+    fotos: [],
     observaciones: [],
+    notificaciones: [],
     estado: 'entregada',
+    prioridad: 'media',
     costoTotal: 88000,
     adelanto: 40000,
     saldo: 48000
@@ -255,6 +260,9 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
                 <div>
                   <strong>Color:</strong> {ordenActual.bicicleta.color}
                 </div>
+                <div>
+                  <strong>Año:</strong> {ordenActual.bicicleta.año}
+                </div>
               </div>
             </div>
           </div>
@@ -342,7 +350,7 @@ const GenerarFactura = ({ orden }: GenerarFacturaProps) => {
                 <strong>Fecha de Ingreso:</strong> {formatearFecha(ordenActual.fechaIngreso)}
               </div>
               <div>
-                <strong>Fecha de Entrega:</strong> {formatearFecha(ordenActual.fechaEntrega || ordenActual.fechaEstimadaEntrega)}
+                <strong>Fecha de Entrega:</strong> {formatearFecha(ordenActual.fechaEntregaReal || ordenActual.fechaEstimadaEntrega)}
               </div>
             </div>
           </div>

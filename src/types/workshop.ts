@@ -105,3 +105,20 @@ export interface Tecnico {
   especialidad: string[];
   activo: boolean;
 }
+
+export interface Factura {
+  id: string;
+  numero: string;
+  ordenTrabajoId: string;
+  cliente: Cliente;
+  fecha: Date;
+  items: {
+    descripcion: string;
+    cantidad: number;
+    precioUnitario: number;
+    total: number;
+  }[];
+  subtotal: number;
+  iva: number;
+  total: number;
+}

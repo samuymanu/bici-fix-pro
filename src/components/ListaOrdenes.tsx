@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +18,9 @@ const ordenesEjemplo: OrdenTrabajo[] = [
       id: '1',
       nombre: 'Juan Carlos Pérez',
       telefono: '3001234567',
-      email: 'juan@email.com'
+      email: 'juan@email.com',
+      direccion: 'Calle 123 #45-67',
+      fechaRegistro: new Date('2024-01-01')
     },
     bicicleta: {
       id: '1',
@@ -28,16 +29,23 @@ const ordenesEjemplo: OrdenTrabajo[] = [
       modelo: 'X-Caliber 8',
       serial: 'TK2024001',
       color: 'Azul',
-      tipo: 'montaña'
+      tipo: 'montaña',
+      año: 2023
     },
     fechaIngreso: new Date('2024-12-01'),
     fechaEstimadaEntrega: new Date('2024-12-05'),
     problemas: ['Frenos chirriantes', 'Cambios desajustados'],
     diagnostico: 'Requiere cambio de pastillas de freno y ajuste de cable de cambios',
+    observacionesIniciales: 'Bicicleta en buen estado general',
+    observacionesTecnico: 'Trabajo en progreso',
     repuestos: [],
     servicios: [],
+    tareas: [],
+    fotos: [],
     observaciones: ['Cliente solicita revisión completa'],
+    notificaciones: [],
     estado: 'en_reparacion',
+    prioridad: 'media',
     costoTotal: 85000,
     adelanto: 40000,
     saldo: 45000
@@ -49,7 +57,9 @@ const ordenesEjemplo: OrdenTrabajo[] = [
       id: '2',
       nombre: 'María García',
       telefono: '3009876543',
-      email: 'maria@email.com'
+      email: 'maria@email.com',
+      direccion: 'Carrera 50 #30-20',
+      fechaRegistro: new Date('2024-02-15')
     },
     bicicleta: {
       id: '2',
@@ -58,16 +68,23 @@ const ordenesEjemplo: OrdenTrabajo[] = [
       modelo: 'Escape 3',
       serial: 'GT2024002',
       color: 'Negro',
-      tipo: 'urbana'
+      tipo: 'urbana',
+      año: 2024
     },
     fechaIngreso: new Date('2024-12-01'),
     fechaEstimadaEntrega: new Date('2024-12-03'),
     problemas: ['Llanta pinchada', 'Cadena suelta'],
     diagnostico: 'Reparación de llanta y tensión de cadena',
+    observacionesIniciales: 'Bicicleta recién comprada',
+    observacionesTecnico: 'Trabajo finalizado',
     repuestos: [],
     servicios: [],
+    tareas: [],
+    fotos: [],
     observaciones: [],
+    notificaciones: [],
     estado: 'finalizada',
+    prioridad: 'baja',
     costoTotal: 25000,
     adelanto: 0,
     saldo: 25000

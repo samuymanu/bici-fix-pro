@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +17,7 @@ const NuevaOrden = () => {
   const [problemas, setProblemas] = useState<string[]>([]);
   const [nuevoProblema, setNuevoProblema] = useState('');
   const [diagnostico, setDiagnostico] = useState('');
+  const [observacionesIniciales, setObservacionesIniciales] = useState('');
   const [fechaEstimada, setFechaEstimada] = useState('');
   const [repuestos, setRepuestos] = useState<RepuestoOrden[]>([]);
   const [servicios, setServicios] = useState<ServicioMano[]>([]);
@@ -41,8 +41,7 @@ const NuevaOrden = () => {
         id: `rep_${Date.now()}`,
         nombre: '',
         precio: 0,
-        categoria: '',
-        stock: 0
+        categoria: 'otros'
       },
       cantidad: 1,
       precioUnitario: 0
@@ -96,16 +95,28 @@ const NuevaOrden = () => {
     const orden: OrdenTrabajo = {
       id: `orden_${Date.now()}`,
       numero: generarNumeroOrden(),
-      cliente: cliente as Cliente,
-      bicicleta: bicicleta as Bicicleta,
+      cliente: {
+        ...cliente,
+        fechaRegistro: new Date()
+      } as Cliente,
+      bicicleta: {
+        ...bicicleta,
+        año: bicicleta.año || new Date().getFullYear()
+      } as Bicicleta,
       fechaIngreso: new Date(),
       fechaEstimadaEntrega: new Date(fechaEstimada),
       problemas,
       diagnostico,
+      observacionesIniciales,
+      observacionesTecnico: '',
       repuestos,
       servicios,
+      tareas: [],
+      fotos: [],
       observaciones: [],
+      notificaciones: [],
       estado: 'recibida',
+      prioridad: 'media',
       costoTotal,
       adelanto,
       saldo
@@ -231,6 +242,16 @@ const NuevaOrden = () => {
                 value={bicicleta.color || ''}
                 onChange={(e) => setBicicleta({...bicicleta, color: e.target.value})}
                 placeholder="Color de la bicicleta"
+              />
+            </div>
+            <div>
+              <Label htmlFor="añoBici">Año</Label>
+              <Input
+                id="añoBici"
+                type="number"
+                value={bicicleta.año || ''}
+                onChange={(e) => setBicicleta({...bicicleta, año: parseInt(e.target.value) || new Date().getFullYear()})}
+                placeholder="Año de la bicicleta"
               />
             </div>
           </CardContent>
