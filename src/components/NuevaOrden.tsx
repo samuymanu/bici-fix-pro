@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Tag, Trash } from 'lucide-react';
+import { Calendar, Clock, Tag, Trash, Wrench } from 'lucide-react';
 import { Cliente, Bicicleta, OrdenTrabajo, RepuestoOrden, ServicioMano } from '@/types/workshop';
 import { generarNumeroOrden, calcularCostoTotal, formatearPrecio } from '@/utils/workshop';
 import TallerHeader from './TallerHeader';
