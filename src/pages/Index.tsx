@@ -1,21 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Wrench, 
-  Plus, 
-  Calendar, 
-  Clock, 
-  DollarSign, 
-  FileText,
-  TrendingUp,
-  Users,
-  AlertCircle,
-  Kanban,
-  Bell,
-  Settings
-} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useElectron } from '@/hooks/useElectron';
+import { Wrench, Plus, Calendar, Clock, DollarSign, FileText,
+  TrendingUp, Users, AlertCircle, Kanban, Bell, Settings } from 'lucide-react';
 import NuevaOrden from '@/components/NuevaOrden';
 import ListaOrdenes from '@/components/ListaOrdenes';
 import DetalleOrden from '@/components/DetalleOrden';
@@ -31,6 +21,15 @@ type VistaActual = 'dashboard' | 'kanban' | 'nueva-orden' | 'lista-ordenes' | 'd
 const Index = () => {
   const [vistaActual, setVistaActual] = useState<VistaActual>('dashboard');
   const [ordenSeleccionada, setOrdenSeleccionada] = useState<OrdenTrabajo | null>(null);
+  const { toast } = useToast();
+  const { 
+    isElectron, 
+    saveFile, 
+    readFile, 
+    setupNavigationListener, 
+    setupDataExportListener,
+    setupDataImportListener 
+  } = useElectron();
 
   // Estadísticas del taller (sin ventas)
   const estadisticas = {
@@ -202,6 +201,7 @@ const Index = () => {
               <h1 className="text-3xl font-bold">Sistema de Taller Automatizado</h1>
               <p className="text-blue-100 mt-2">
                 Gestión completa y automatizada de reparaciones
+                {isElectron && <span className="ml-2 text-xs bg-white/20 px-2 py-1 rounded">Versión Escritorio</span>}
               </p>
             </div>
           </div>
@@ -436,6 +436,83 @@ const Index = () => {
       </div>
     </div>
   );
+
+  // Configurar listeners de Electron
+  useEffect(() => {
+    if (!isElectron) return;
+
+    const cleanupNav = setupNavigationListener((route: string) => {
+      switch (route) {
+        case 'dashboard':
+          setVistaActual('dashboard');
+          break;
+        case 'nueva-orden':
+          setVistaActual('nueva-orden');
+          break;
+        case 'kanban':
+          setVistaActual('kanban');
+          break;
+        case 'lista-ordenes':
+          setVistaActual('lista-ordenes');
+          break;
+        case 'tecnicos':
+          setVistaActual('tecnicos');
+          break;
+        case 'notificaciones':
+          setVistaActual('notificaciones');
+          break;
+      }
+    });
+
+    const cleanupExport = setupDataExportListener(async (filePath: string) => {
+      try {
+        const exportData = {
+          ordenes: ordenesEjemplo,
+          estadisticas,
+          fechaExportacion: new Date().toISOString(),
+          version: '1.0.0'
+        };
+        
+        const result = await saveFile(JSON.stringify(exportData, null, 2), filePath);
+        if (result.success) {
+          toast({
+            title: "Datos exportados exitosamente",
+            description: `Archivo guardado en: ${result.filePath}`,
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error al exportar",
+          description: "No se pudieron exportar los datos",
+          variant: "destructive",
+        });
+      }
+    });
+
+    const cleanupImport = setupDataImportListener((data: any) => {
+      try {
+        if (data && data.ordenes) {
+          console.log('Datos importados:', data);
+          toast({
+            title: "Datos importados exitosamente",
+            description: `Se importaron ${data.ordenes.length} órdenes`,
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error al importar",
+          description: "El archivo no tiene el formato correcto",
+          variant: "destructive",
+        });
+      }
+    });
+
+    return () => {
+      cleanupNav?.();
+      cleanupExport?.();
+      cleanupImport?.();
+    };
+  }, [isElectron, setupNavigationListener, setupDataExportListener, setupDataImportListener, saveFile, toast, ordenesEjemplo, estadisticas]);
 
   return (
     <div className="min-h-screen bg-gray-50">

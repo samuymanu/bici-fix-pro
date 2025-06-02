@@ -1,0 +1,63 @@
+
+{
+  "appId": "com.taller.sistemabicicletas",
+  "productName": "Sistema de Taller",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "public/electron.js",
+    "public/preload.js",
+    "public/icon.png",
+    "node_modules/**/*"
+  ],
+  "extraMetadata": {
+    "main": "public/electron.js"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "icon": "public/icon.png",
+    "artifactName": "${productName}-Setup-${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "public/icon.png",
+    "uninstallerIcon": "public/icon.png",
+    "installerHeaderIcon": "public/icon.png",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Sistema de Taller"
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "icon": "public/icon.png"
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      }
+    ],
+    "icon": "public/icon.png"
+  }
+}
